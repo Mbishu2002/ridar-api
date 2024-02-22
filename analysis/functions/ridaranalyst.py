@@ -1,4 +1,3 @@
-# analysis/utils.py
 import pandas as pd
 
 def create_frequency_table(data):
