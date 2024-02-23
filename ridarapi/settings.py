@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'analysis',
     'rest_framework',
     'corsheaders',
+    'allauth',
+    'allauth.account',
     'rest_framework.authtoken'
 ]
 
@@ -54,7 +56,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware'
+    'corsheaders.middleware.CorsMiddleware',
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 ROOT_URLCONF = 'ridarapi.urls'
