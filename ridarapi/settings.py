@@ -79,7 +79,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ridarapi.wsgi.application'
-CORS_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Database

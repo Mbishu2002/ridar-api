@@ -8,8 +8,9 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+from django.utils import timezone
 from django.core.mail import send_mail
-from allauth.account.models import EmailConfirmation, EmailConfirmationHMAC
+from allauth.account.models import EmailConfirmation, EmailConfirmationHMAC, EmailAddress
 
 @api_view(['POST'])
 @authentication_classes([])
@@ -29,19 +30,18 @@ def create_user(request):
         return Response({"error": "User with this email already exists"}, status=400)
 
     user = User.objects.create_user(username=username, email=email, password=password)
+    email_address = EmailAddress.objects.create(user=user, email=email, primary=True, verified=False)
 
     # Token generation
     token, created = Token.objects.get_or_create(user=user)
-
-    # Email verification using django-allauth
-    email_confirmation = EmailConfirmation.create(user)
+    email_confirmation = EmailConfirmation.create(email_address)
     email_confirmation.sent = True
     email_confirmation.save()
-    email_confirmation.sent_at = email_confirmation.sent_at or timezone.now()
+    email_confirmation.sent = email_confirmation.sent or timezone.now()
     email_confirmation.save()
     email_confirmation.confirm()
 
-    return Response({"message": "User created successfully. Verification email sent."})
+    return Response({"message": "User created successfully. Verification email sent."}, status=200)
 
 @api_view(['POST'])
 @authentication_classes([])
@@ -59,10 +59,11 @@ def login_user(request):
         return Response({"error": "Invalid credentials"}, status=401)
 
     login(request, user)
+    
 
     token, created = Token.objects.get_or_create(user=user)
 
-    return Response({"message": "Login successful", "token": token.key})
+    return Response({"message": "Login successful", "token": token.key, "email": user.email}, status=200)
 
 @api_view(['POST'])
 @authentication_classes([])
@@ -77,9 +78,8 @@ def forgot_password(request):
 
     # Generate a password reset token using django-allauth
     email_confirmation = EmailConfirmation.create(user)
-    email_confirmation.sent = True
     email_confirmation.save()
-    email_confirmation.sent_at = email_confirmation.sent_at or timezone.now()
+    email_confirmation.sent = str(timezone.now())
     email_confirmation.save()
     email_confirmation.confirm()  
 
